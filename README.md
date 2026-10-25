@@ -24,13 +24,19 @@ Each category is one check in `hideme/detectors.py`. A check scans the whole tex
 
 ## Run
 
+GitHub only stores the code. HideMe runs on your computer and listens on `127.0.0.1`.
+
 ```bash
+git clone https://github.com/Betteronsaturday/HideMe.git
+cd HideMe
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m hideme --host 127.0.0.1 --port 5006
 ```
 
-Open [http://127.0.0.1:5006](http://127.0.0.1:5006). Paste text or choose a file.
+Open [http://127.0.0.1:5006](http://127.0.0.1:5006). Paste text or choose a file. Leave that terminal open. Stop the server with `Ctrl+C`.
+
+If the virtual environment already exists, only the last command is needed.
 
 Sessions are stored in `~/.local/share/hideme/sessions/`.
 
