@@ -62,7 +62,7 @@ def _decode(data: bytes) -> str:
     if not data:
         return ""
     if _is_image(data) or _is_pdf(data) or _binary_noise(data):
-        raise RuntimeError("il file non è testo")
+        raise RuntimeError("file is not text")
     if data.startswith((b"\xff\xfe", b"\xfe\xff")):
         return data.decode("utf-16").replace("\x00", "")
     try:
@@ -70,7 +70,7 @@ def _decode(data: bytes) -> str:
     except UnicodeDecodeError:
         text = data.decode("cp1252")
     if not _mostly_text(text):
-        raise RuntimeError("il file non è testo")
+        raise RuntimeError("file is not text")
     return text
 
 
@@ -114,9 +114,9 @@ def _redact_pdf(data: bytes, mapping: dict, session: Session) -> bytes:
 
 def anonymize_path(path: Path) -> dict:
     if not path.is_file():
-        raise RuntimeError("file non trovato")
+        raise RuntimeError("file not found")
     if path.stat().st_size > MAX_BYTES:
-        raise RuntimeError("file troppo grande")
+        raise RuntimeError("file too large")
     data = path.read_bytes()
     session = Session()
     ext = path.suffix.lower()
@@ -131,7 +131,7 @@ def anonymize_path(path: Path) -> dict:
         if _is_pdf(data):
             with pymupdf.open(stream=data, filetype="pdf") as doc:
                 if doc.needs_pass:
-                    raise RuntimeError("PDF protetto da password")
+                    raise RuntimeError("password-protected PDF")
                 text = "\n".join(page.get_text() for page in doc)
         else:
             text = _decode(data)

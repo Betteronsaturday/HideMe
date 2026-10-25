@@ -25,7 +25,7 @@ app.config["MAX_CONTENT_LENGTH"] = MAX_BYTES
 
 def _public(session: Session, anonymized: str, photos_removed: int) -> dict:
     if values_leaked(anonymized, session.mapping):
-        raise RuntimeError("anonimizzazione incompleta: output non restituito")
+        raise RuntimeError("anonymization incomplete: output withheld")
     return {
         "session_id": session.id,
         "anonymized_text": anonymized,
@@ -57,7 +57,7 @@ def analyze():
             suffix = Path(upload.filename).suffix
             data = upload.read()
             if len(data) > MAX_BYTES:
-                return jsonify({"error": "file troppo grande"}), 400
+                return jsonify({"error": "file too large"}), 400
             fd, name = tempfile.mkstemp(suffix=suffix or ".bin")
             os.close(fd)
             tmp = Path(name)
@@ -68,7 +68,7 @@ def analyze():
                 tmp.unlink(missing_ok=True)
             record = load(result["session_id"])
             if values_leaked(result["anonymized_text"], record["mapping"]):
-                return jsonify({"error": "anonimizzazione incompleta"}), 400
+                return jsonify({"error": "anonymization incomplete"}), 400
             return jsonify({
                 "session_id": result["session_id"],
                 "anonymized_text": result["anonymized_text"],
@@ -78,7 +78,7 @@ def analyze():
         payload = request.get_json(silent=True) or {}
         text = str(payload.get("text") or "")
         if not text.strip():
-            return jsonify({"error": "nessun testo"}), 400
+            return jsonify({"error": "no text"}), 400
         anonymized, mapping = anonymize_text(text)
         session = Session()
         session.mapping.update(mapping)
@@ -94,10 +94,10 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     args = parser.parse_args()
     if args.host != HOST:
-        print("HideMe ascolta solo su 127.0.0.1", file=sys.stderr)
+        print("HideMe listens only on 127.0.0.1", file=sys.stderr)
         sys.exit(2)
     app.config["HIDEME_PORT"] = args.port
-    print(f"HideMe su http://{HOST}:{args.port}")
+    print(f"HideMe at http://{HOST}:{args.port}")
     app.run(host=HOST, port=args.port, threaded=True)
 
 

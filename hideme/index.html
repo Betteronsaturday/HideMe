@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -104,18 +104,18 @@
 <body>
   <main>
     <h1>HideMe</h1>
-    <p class="lede">Anonimizza qui, sul tuo computer. Il dizionario dei valori resta in locale e non compare in questa pagina.</p>
+    <p class="lede">Anonymize here, on your computer. The dictionary of original values stays local and is not shown on this page.</p>
     <form id="form">
-      <label for="text">Testo</label>
-      <textarea id="text" name="text" placeholder="Incolla un testo, oppure scegli un file."></textarea>
+      <label for="text">Text</label>
+      <textarea id="text" name="text" placeholder="Paste text, or choose a file."></textarea>
       <div class="file">
-        <label for="file">File di testo, PDF o immagine</label>
+        <label for="file">Text file, PDF, or image</label>
         <input id="file" name="file" type="file">
       </div>
-      <button type="submit" id="go">Anonimizza</button>
+      <button type="submit" id="go">Anonymize</button>
     </form>
     <section class="result" id="result" hidden>
-      <h2>Risultato</h2>
+      <h2>Result</h2>
       <p class="meta" id="meta"></p>
       <pre id="out"></pre>
     </section>
@@ -133,7 +133,7 @@
       event.preventDefault();
       go.disabled = true;
       result.hidden = false;
-      meta.textContent = "Analisi in corso.";
+      meta.textContent = "Working.";
       meta.className = "meta";
       out.textContent = "";
       try {
@@ -151,10 +151,10 @@
         }
         const data = await response.json();
         if (!response.ok) {
-          throw new Error(data.error || "Richiesta non riuscita");
+          throw new Error(data.error || "Request failed");
         }
-        const bits = [`Sessione ${data.session_id}`, `${data.n_entities} elementi nascosti`];
-        if (data.photos_removed) bits.push(`${data.photos_removed} foto tolte`);
+        const bits = [`Session ${data.session_id}`, `${data.n_entities} items hidden`];
+        if (data.photos_removed) bits.push(`${data.photos_removed} photos removed`);
         meta.textContent = bits.join(" · ");
         out.textContent = data.anonymized_text || "";
       } catch (error) {
