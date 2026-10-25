@@ -1,4 +1,4 @@
-# HideMe
+# HideMe 🫥
 
 HideMe anonymizes personal information in text, PDFs, and images on your own computer. The document never leaves the machine, and the page shows only placeholders. The map from each placeholder back to the original value stays in a local file and is not returned by the API.
 
