@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HideMe</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1c1915;
+      --muted: #5e574e;
+      --paper: #f3efe6;
+      --card: #fffdf8;
+      --line: #d8d0c4;
+      --accent: #1f4d3a;
+      --accent-ink: #f7f4ee;
+      --danger: #8a2f24;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #e7efe8 0%, transparent 55%),
+        var(--paper);
+    }
+    main {
+      width: min(760px, calc(100% - 32px));
+      margin: 48px auto 64px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 2.4rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+    .lede {
+      margin: 8px 0 28px;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+    form, .result {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    textarea, input[type="file"] {
+      width: 100%;
+      font: 0.95rem/1.45 ui-sans-serif, system-ui, sans-serif;
+    }
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+    }
+    .file {
+      margin-top: 16px;
+    }
+    button {
+      margin-top: 18px;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 20px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font: 600 0.95rem/1 ui-sans-serif, system-ui, sans-serif;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.6; cursor: wait; }
+    .result {
+      margin-top: 18px;
+    }
+    .result h2 {
+      margin: 0 0 8px;
+      font-size: 1.15rem;
+    }
+    .meta {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font: 0.85rem/1.4 ui-sans-serif, system-ui, sans-serif;
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font: 0.95rem/1.5 ui-sans-serif, system-ui, sans-serif;
+    }
+    .error { color: var(--danger); }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>HideMe</h1>
+    <p class="lede">Anonimizza qui, sul tuo computer. Il dizionario dei valori resta in locale e non compare in questa pagina.</p>
+    <form id="form">
+      <label for="text">Testo</label>
+      <textarea id="text" name="text" placeholder="Incolla un testo, oppure scegli un file."></textarea>
+      <div class="file">
+        <label for="file">File di testo, PDF o immagine</label>
+        <input id="file" name="file" type="file">
+      </div>
+      <button type="submit" id="go">Anonimizza</button>
+    </form>
+    <section class="result" id="result" hidden>
+      <h2>Risultato</h2>
+      <p class="meta" id="meta"></p>
+      <pre id="out"></pre>
+    </section>
+  </main>
+  <script>
+    const form = document.getElementById("form");
+    const text = document.getElementById("text");
+    const file = document.getElementById("file");
+    const go = document.getElementById("go");
+    const result = document.getElementById("result");
+    const meta = document.getElementById("meta");
+    const out = document.getElementById("out");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      go.disabled = true;
+      result.hidden = false;
+      meta.textContent = "Analisi in corso.";
+      meta.className = "meta";
+      out.textContent = "";
+      try {
+        let response;
+        if (file.files.length) {
+          const body = new FormData();
+          body.append("file", file.files[0]);
+          response = await fetch("/analyze", { method: "POST", body });
+        } else {
+          response = await fetch("/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: text.value }),
+          });
+        }
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Richiesta non riuscita");
+        }
+        const bits = [`Sessione ${data.session_id}`, `${data.n_entities} elementi nascosti`];
+        if (data.photos_removed) bits.push(`${data.photos_removed} foto tolte`);
+        meta.textContent = bits.join(" · ");
+        out.textContent = data.anonymized_text || "";
+      } catch (error) {
+        meta.textContent = error.message;
+        meta.className = "meta error";
+      } finally {
+        go.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
